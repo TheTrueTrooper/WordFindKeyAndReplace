@@ -1,0 +1,7 @@
+
+*.ide-wal
+*.ide-shm
+*.ide
+*.lock
+.vs/WordFindKeyAndReplace/v15/.suo
+*.pfx
