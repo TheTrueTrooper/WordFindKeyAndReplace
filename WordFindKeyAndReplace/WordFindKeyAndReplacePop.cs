@@ -32,100 +32,185 @@ using Microsoft.Office.Tools.Word;
 
 namespace WordFindKeyAndReplace
 {
+    /// <summary>
+    /// The bread and butter systems. 
+    ///Most of the fuctionality is handled by the form that is prompted and that happens to happen here.
+    /// </summary>
     public partial class WordFindKeyAndReplacePopForm : Form
     {
+        /// <summary>
+        /// The constant for the Regex Finder Expression
+        /// </summary>
+        const string FindersRegexExpression = @"((@\[([^\[\]=\n@])*\])|(@\[([^\[\]=\n@])*=([^\[\]=\n@])*\]))";
+        /// <summary>
+        /// The constant for the Regex Default Finder Expression
+        /// </summary>
+        const string DefaultFinderRegexExpression = @"(=([^=])*\])";
+
+        /// <summary>
+        /// the event for if someone types at all
+        /// </summary>
         event EventHandler DocTextChanged;
 
-        Regex Finder = new Regex(@"((@\[([^\[,\],=,\n,@])*\])|(@\[([^\[,\],=,\n,@])*=([^\[,\],=,\n,@])*\]))", RegexOptions.Multiline);
-        Regex DefaultFinder = new Regex(@"(=([^=])*\])", RegexOptions.Singleline);
+        /// <summary>
+        /// Our regular expression Pattern for finding the the varables in the text
+        /// </summary>
+        Regex Finder = new Regex(FindersRegexExpression, RegexOptions.Multiline);
+
+        /// <summary>
+        /// Our regular expression Pattern for finding the the default value in the varables
+        /// </summary>
+        Regex DefaultFinder = new Regex(DefaultFinderRegexExpression, RegexOptions.Singleline);
+
+        /// <summary>
+        /// A dictionary to hold the controls for the variable. uses the KeyValueControls custom class in the KeyValueControlsUtilities for the access and storage.
+        /// </summary>
         Dictionary<string, KeyValueControls> Dictionary;
-        Microsoft.Office.Interop.Word.Document nativeDocument;
-        Document vstoDocument;
+
+        /// <summary>
+        /// The native document as per the microsoft guide not really used so far exept to build the viso
+        /// </summary>
+        Microsoft.Office.Interop.Word.Document NativeDocument;
+
+        /// <summary>
+        /// The VSTO Document object for the C# magic to edit with 
+        /// Changes here are sent back to the document in real time
+        /// </summary>
+        Document VSTODocument;
+
+        /// <summary>
+        /// The Old text. For use with a timer on the generated form to trigger the event of text change for a rescan
+        /// </summary>
         string Oldtext;
 
 
-
+        /// <summary>
+        /// The constructor
+        /// </summary>
         public WordFindKeyAndReplacePopForm()
         {
             InitializeComponent();
 
+            //if we have a document open begin to build the fuctionality or else close the window
             if (Globals.ThisAddIn.Application.Documents.Count > 0)
             {
-                nativeDocument = Globals.ThisAddIn.Application.ActiveDocument;
-                vstoDocument = Globals.Factory.GetVstoObject(nativeDocument);
-                vstoDocument.BeforeClose += CloseEvent;
+                //Grab the word app as per the microsoft guide may be useful later
+                NativeDocument = Globals.ThisAddIn.Application.ActiveDocument;
+                //use that handle to to create the Document 
+                VSTODocument = Globals.Factory.GetVstoObject(NativeDocument);
+                //register a close event to close this code if the program is closed.
+                VSTODocument.BeforeClose += CloseEvent;
+                //register the event for text being changed
                 DocTextChanged += OnDocTextChanged;
+                //start the timer loop for text changes
                 Ti_Listener.Enabled = true;
+                //do a scan pass for the keys for varables
                 BuildKeyList();
             }
+            else
+                Close();
         }
 
+        /// <summary>
+        /// This fuction scans for all of the key for varables marked by @[*=*] (losely see FindersRegexExpression) 
+        /// and then them out with a defualt value to build the controls. After controls are built it regs them with the control group
+        /// </summary>
         void BuildKeyList()
         {
-            //Clear globals
-            Dictionary = new Dictionary<string, KeyValueControls>();
-            GrBo_DictionaryInput.Controls.Clear();
-            KeyValueControls.LineNumber = 0;
+            //clear all containers to empty states. states
+            Dictionary = new Dictionary<string, KeyValueControls>(); //clear dictionary for GC
+            GrBo_DictionaryInput.Controls.Clear(); //clear any controls for GC
+            KeyValueControls.LineNumber = 0; //reset the line droper for the KeyValueControls use when self building controls
 
-            Oldtext = vstoDocument.Content.Text;
+            //set the old text (not locked for quick pull) 
+            lock (VSTODocument.Content.Text)
+                Oldtext = VSTODocument.Content.Text;
+            //find all the variables in the old text (not we do not use the new text as it could be still being writen to)
             MatchCollection Matches = Finder.Matches(Oldtext);
 
+            //For each match we will pull the defualt value.
             foreach (Match Match in Matches)
             {
+                //grab the value to be worked on and open a default value var
                 string MatchName = Match.Value;
                 string DefaultVal = null;
+
+                //if ther is a = sign then there must be a defualt value by convent
                 if (MatchName.Contains("="))
                 {
+                    // first pull out the value of the value then clean the match
                     DefaultVal = DefaultFinder.Match(MatchName).Value;
                     DefaultVal = DefaultVal.Remove(DefaultVal.Length - 1, 1).Remove(0, 1);
+                    //clean the name
                     MatchName = MatchName.Remove(MatchName.IndexOf('='), MatchName.Length - MatchName.IndexOf('=') - 1);
                 }
 
+                //if we not have the key add it and build the controls 
                 if (!Dictionary.ContainsKey(MatchName))
                 {
-                    Dictionary.Add(MatchName, new KeyValueControls(MatchName, DefaultVal));
-                    GrBo_DictionaryInput.Controls.Add(Dictionary.Last().Value.Label);
-                    GrBo_DictionaryInput.Controls.Add(Dictionary.Last().Value.TextBox);
+                    //add it and build the controls(see the KeyValueControls to see how the controls are built and utilized)
+                    Dictionary.Add(Match.Value, new KeyValueControls(MatchName, DefaultVal));
+                    //register all of it's controls
+                    Dictionary.Last().Value.RegisterTheControls(GrBo_DictionaryInput.Controls);
                 }
 
             }
         }
 
+        /// <summary>
+        /// The find and replace button event
+        /// On click will find all the Keys and replace them with their newly associated vars values as per the form
+        /// </summary>
+        /// <param name="sender">the sender(this form)</param>
+        /// <param name="e">the args(the defualt)</param>
         private void Bu_FindAndReplace_Click(object sender, EventArgs e)
         {
-
-            string Values = vstoDocument.Content.Text;
+            //grab the text to work on
+            string Values = VSTODocument.Content.Text;
 
             if (Dictionary != null)
             {
                 foreach (KeyValuePair<string, KeyValueControls> KP in Dictionary)
                 {
-                    vstoDocument.Content.Text = vstoDocument.Content.Text.Replace(KP.Key, KP.Value.ReplaceValue);
+                    //for each key attempt a replace. and write it back to the text
+                    Values = Values.Replace(KP.Key, KP.Value.ReplaceValue);
                 }
             }
+            lock (VSTODocument.Content.Text)
+                VSTODocument.Content.Text = Values;
             Close();
         }
 
-        //private void Bu_Rescan_Click(object sender, EventArgs e)
-        //{
-        //    BuildKeyList();
-        //}
-
+        /// <summary>
+        /// the close event is called if the application is closing simply closes the form
+        /// </summary>
+        /// <param name="sender">the sender (inherents from VSTODocument)</param>
+        /// <param name="e">the sender (inherents from VSTODocument)</param>
         void CloseEvent(object sender, CancelEventArgs e)
         {
             Close();
         }
 
+        /// <summary>
+        /// An event for if the text is changed. Rebuilds the Vars list and their controls
+        /// </summary>
+        /// <param name="sender">the sender (inherents from the Timer Event)</param>
+        /// <param name="e">the sender (inherents from the Timer Event)</param>
         void OnDocTextChanged(object sender, EventArgs e)
         {
-            if (vstoDocument.Content.Text != Oldtext)
+            if (VSTODocument.Content.Text != Oldtext)
                 BuildKeyList();
         }
 
+        /// <summary>
+        /// An event for if the text is changed. invokes the DocTextChanged event
+        /// </summary>
+        /// <param name="sender">the sender (inherents from the Timer Event)</param>
+        /// <param name="e">the sender (inherents from the Timer Event)</param>
         private void Ti_Listener_Tick(object sender, EventArgs e)
         {
-            if (vstoDocument.Content.Text != Oldtext)
-                DocTextChanged.Invoke(this, e);
+            if (VSTODocument.Content.Text != Oldtext)
+                DocTextChanged.Invoke(sender, e);
         }
     }
 }
