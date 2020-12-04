@@ -144,7 +144,7 @@ namespace WordFindKeyAndReplace
                     //clean the name
                     MatchName = MatchName.Remove(MatchName.IndexOf('='), MatchName.Length - MatchName.IndexOf('=') - 1);
                 }
-
+                
                 //if we not have the key add it and build the controls 
                 if (!Dictionary.ContainsKey(MatchName))
                 {
@@ -166,7 +166,7 @@ namespace WordFindKeyAndReplace
         private void Bu_FindAndReplace_Click(object sender, EventArgs e)
         {
             //grab the text to work on
-            string Values = VSTODocument.Content.Text;
+            string Values = VSTODocument.Content.FormattedText.Text;
 
             if (Dictionary != null)
             {
@@ -177,7 +177,7 @@ namespace WordFindKeyAndReplace
                 }
             }
             lock (VSTODocument.Content.Text)
-                VSTODocument.Content.Text = Values;
+                VSTODocument.Content.FormattedText.Text = Values;
             Close();
         }
 
