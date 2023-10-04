@@ -12,3 +12,17 @@ C:\Users\Angelo's Tower PC\source\repos\WordFindKeyAndReplace\WordFindKeyAndRepl
 C:\Users\Angelo's Tower PC\source\repos\WordFindKeyAndReplace\WordFindKeyAndReplace\obj\Debug\WordFindKeyAndReplace.pdb
 C:\Users\Angelo's Tower PC\source\repos\WordFindKeyAndReplace\WordFindKeyAndReplace\obj\Debug\WordFindKeyAndReplace.Ribbon1.resources
 C:\Users\Angelo's Tower PC\source\repos\WordFindKeyAndReplace\WordFindKeyAndReplace\obj\Debug\WordFindKeyAndReplace.WordFindKeyAndReplacePopForm.resources
+C:\Sources\WordFindKeyAndReplace\WordFindKeyAndReplace\obj\Debug\WordFindKeyAndReplace.csproj.AssemblyReference.cache
+C:\Sources\WordFindKeyAndReplace\WordFindKeyAndReplace\obj\Debug\WordFindKeyAndReplace.Properties.Resources.resources
+C:\Sources\WordFindKeyAndReplace\WordFindKeyAndReplace\obj\Debug\WordFindKeyAndReplace.Ribbon1.resources
+C:\Sources\WordFindKeyAndReplace\WordFindKeyAndReplace\obj\Debug\WordFindKeyAndReplace.WordFindKeyAndReplacePopForm.resources
+C:\Sources\WordFindKeyAndReplace\WordFindKeyAndReplace\obj\Debug\WordFindKeyAndReplace.csproj.GenerateResource.cache
+C:\Sources\WordFindKeyAndReplace\WordFindKeyAndReplace\obj\Debug\WordFindKeyAndReplace.dll
+C:\Sources\WordFindKeyAndReplace\WordFindKeyAndReplace\obj\Debug\WordFindKeyAndReplace.pdb
+C:\Sources\WordFindKeyAndReplace\WordFindKeyAndReplace\bin\Debug\WordFindKeyAndReplace.dll
+C:\Sources\WordFindKeyAndReplace\WordFindKeyAndReplace\bin\Debug\WordFindKeyAndReplace.pdb
+C:\Sources\WordFindKeyAndReplace\WordFindKeyAndReplace\bin\Debug\WordFindKeyAndReplace.dll.manifest
+C:\Sources\WordFindKeyAndReplace\WordFindKeyAndReplace\bin\Debug\WordFindKeyAndReplace.vsto
+C:\Sources\WordFindKeyAndReplace\WordFindKeyAndReplace\bin\Debug\Microsoft.Office.Tools.Common.v4.0.Utilities.dll
+C:\Sources\WordFindKeyAndReplace\WordFindKeyAndReplace\obj\Debug\WordFindKeyAndReplace.csproj.CoreCompileInputs.cache
+C:\Sources\WordFindKeyAndReplace\WordFindKeyAndReplace\obj\Debug\WordFindKeyAndReplace.csproj.CopyComplete
