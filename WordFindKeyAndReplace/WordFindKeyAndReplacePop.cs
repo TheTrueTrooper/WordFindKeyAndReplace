@@ -28,7 +28,7 @@ using System.Windows.Forms;
 using Word = Microsoft.Office.Interop.Word;
 using Office = Microsoft.Office.Core;
 using Microsoft.Office.Tools.Word;
-
+using Microsoft.Office.Interop.Word;
 
 namespace WordFindKeyAndReplace
 {
@@ -76,7 +76,7 @@ namespace WordFindKeyAndReplace
         /// The VSTO Document object for the C# magic to edit with 
         /// Changes here are sent back to the document in real time
         /// </summary>
-        Document VSTODocument;
+        Microsoft.Office.Tools.Word.Document VSTODocument;
 
         /// <summary>
         /// The Old text. For use with a timer on the generated form to trigger the event of text change for a rescan
@@ -132,24 +132,24 @@ namespace WordFindKeyAndReplace
             foreach (Match Match in Matches)
             {
                 //grab the value to be worked on and open a default value var
-                string MatchName = Match.Value;
-                string DefaultVal = null;
+                string matchName = Match.Value;
+                string defaultVal = null;
 
                 //if ther is a = sign then there must be a defualt value by convent
-                if (MatchName.Contains("="))
+                if (matchName.Contains("="))
                 {
                     // first pull out the value of the value then clean the match
-                    DefaultVal = DefaultFinder.Match(MatchName).Value;
-                    DefaultVal = DefaultVal.Remove(DefaultVal.Length - 1, 1).Remove(0, 1);
+                    defaultVal = DefaultFinder.Match(matchName).Value;
+                    defaultVal = defaultVal.Remove(defaultVal.Length - 1, 1).Remove(0, 1);
                     //clean the name
-                    MatchName = MatchName.Remove(MatchName.IndexOf('='), MatchName.Length - MatchName.IndexOf('=') - 1);
+                    matchName = matchName.Remove(matchName.IndexOf('='), matchName.Length - matchName.IndexOf('=') - 1);
                 }
                 
                 //if we not have the key add it and build the controls 
-                if (!Dictionary.ContainsKey(MatchName))
+                if (!Dictionary.ContainsKey(matchName))
                 {
                     //add it and build the controls(see the KeyValueControls to see how the controls are built and utilized)
-                    Dictionary.Add(Match.Value, new KeyValueControls(MatchName, DefaultVal));
+                    Dictionary.Add(Match.Value, new KeyValueControls(matchName, defaultVal));
                     //register all of it's controls
                     Dictionary.Last().Value.RegisterTheControls(GrBo_DictionaryInput.Controls);
                 }
@@ -166,18 +166,18 @@ namespace WordFindKeyAndReplace
         private void Bu_FindAndReplace_Click(object sender, EventArgs e)
         {
             //grab the text to work on
-            string Values = VSTODocument.Content.FormattedText.Text;
+            string values = VSTODocument.Content.FormattedText.Text;
 
             if (Dictionary != null)
             {
                 foreach (KeyValuePair<string, KeyValueControls> KP in Dictionary)
                 {
                     //for each key attempt a replace. and write it back to the text
-                    Values = Values.Replace(KP.Key, KP.Value.ReplaceValue);
+                    values = values.Replace(KP.Key, KP.Value.ReplaceValue);
                 }
             }
             lock (VSTODocument.Content.Text)
-                VSTODocument.Content.FormattedText.Text = Values;
+                VSTODocument.Content.FormattedText.Text = values;
             Close();
         }
 
@@ -185,7 +185,7 @@ namespace WordFindKeyAndReplace
         /// the close event is called if the application is closing simply closes the form
         /// </summary>
         /// <param name="sender">the sender (inherents from VSTODocument)</param>
-        /// <param name="e">the sender (inherents from VSTODocument)</param>
+        /// <param name="e">the event args (inherents from VSTODocument)</param>
         void CloseEvent(object sender, CancelEventArgs e)
         {
             Close();
@@ -195,7 +195,7 @@ namespace WordFindKeyAndReplace
         /// An event for if the text is changed. Rebuilds the Vars list and their controls
         /// </summary>
         /// <param name="sender">the sender (inherents from the Timer Event)</param>
-        /// <param name="e">the sender (inherents from the Timer Event)</param>
+        /// <param name="e">the event args (inherents from the Timer Event)</param>
         void OnDocTextChanged(object sender, EventArgs e)
         {
             if (VSTODocument.Content.Text != Oldtext)
@@ -206,11 +206,51 @@ namespace WordFindKeyAndReplace
         /// An event for if the text is changed. invokes the DocTextChanged event
         /// </summary>
         /// <param name="sender">the sender (inherents from the Timer Event)</param>
-        /// <param name="e">the sender (inherents from the Timer Event)</param>
+        /// <param name="e">the event (inherents from the Timer Event)</param>
         private void Ti_Listener_Tick(object sender, EventArgs e)
         {
             if (VSTODocument.Content.Text != Oldtext)
                 DocTextChanged.Invoke(sender, e);
+        }
+
+        /// <summary>
+        /// An event for if the text the add var button is pressed
+        /// </summary>
+        /// <param name="sender">the sender</param>
+        /// <param name="e">the event</param>
+        private void Bu_AddVar_Click(object sender, EventArgs e)
+        {
+            string varName = TeBo_VarName.Text;
+
+            InsertText($"@[{varName}]");
+        }
+
+        /// <summary>
+        /// An event for if the text the add var default button is pressed
+        /// </summary>
+        /// <param name="sender">the sender</param>
+        /// <param name="e">the event</param>
+        private void Bu_AddVarWithDefualt_Click(object sender, EventArgs e)
+        {
+            string varName = TeBo_VarName.Text;
+            string varDefault = TeBo_VarDefault.Text;
+
+            InsertText($"@[{varName}={varDefault}]");
+        }
+
+        /// <summary>
+        /// A simple function to insert text at the selected area
+        /// </summary>
+        /// <param name="Text">the text to insert</param>
+        private void InsertText(string Text)
+        { 
+            if (!string.IsNullOrEmpty(Text))
+            {
+                //get the current selection
+                Selection currentSelection = VSTODocument.ActiveWindow.Application.Selection;
+                //replace with text
+                currentSelection.TypeText(Text);
+            }
         }
     }
 }
