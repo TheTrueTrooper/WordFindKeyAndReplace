@@ -27,10 +27,11 @@
     <RootNamespace>WordFindKeyAndReplace</RootNamespace>
     <AssemblyName>WordFindKeyAndReplace</AssemblyName>
     <LoadBehavior>3</LoadBehavior>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <DefineConstants>VSTO40</DefineConstants>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <BootstrapperComponentsLocation>HomeSite</BootstrapperComponentsLocation>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.VSTORuntime.4.0">
@@ -195,6 +196,7 @@
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="ThisAddIn.cs">
       <SubType>Code</SubType>
@@ -219,10 +221,11 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>WordFindKeyAndReplace_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>
+    </ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>A97713169ABB8E34BC5EF9EBAF1FE7A4414D71A3</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>2BA0F8E7F9CF507E7B20935E5632181EB696BC9E</ManifestCertificateThumbprint>
   </PropertyGroup>
   <!-- Include the build rules for a C# project. -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
